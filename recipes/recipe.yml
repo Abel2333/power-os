@@ -3,11 +3,11 @@
 # image will be published to ghcr.io/<user>/<name>
 name: power-os
 # description will be included in the image's metadata
-description: This is my personal OS image.
+description: Personal Fedora Atomic image with Niri as the primary desktop and GNOME as a fallback.
 
 # the base image to build on top of (FROM) and the version tag to use
-base-image: ghcr.io/ublue-os/silverblue-main
-image-version: 42 # latest is also supported if you want new updates ASAP
+base-image: ghcr.io/blue-build/base-images/fedora-silverblue
+image-version: 43 # latest is also supported if you want new updates ASAP
 
 # module configuration, executed in order
 # you can include multiple instances of the same module
@@ -19,27 +19,78 @@ modules:
 
   - type: dnf
     repos:
+      files:
+        - https://download.opensuse.org/repositories/home:TheLocehiliosan:yadm/Fedora_%OS_VERSION%/home:TheLocehiliosan:yadm.repo
       copr:
         - atim/starship
+        - yalter/niri
+        - alternateved/keyd
     install:
       packages:
-        - micro
+        # Shell prompt
         - starship
+
+        # Wayland compositor and desktop shell
+        - niri
+        - mako
+        - waybar
+
+        # Terminal emulator
+        - kitty
+
+        # Session, lock, and wallpaper
+        - swaylock
+        - swayidle
+        - swaybg
+
+        # X11 compatibility
+        - xwayland-satellite
+
+        # XDG desktop portals
+        - xdg-desktop-portal-gnome
+        - xdg-desktop-portal-gtk
+
+        # Clipboard and audio control
+        - wl-clipboard
+        - pavucontrol
+
+        # Privilege escalation and input remapping
+        - lxqt-policykit
+        - keyd
+
+        # CLI tools
+        - eza
+        - fd-find
+        - ripgrep
+        - tmux
+        - nvim
+        - yadm
     remove:
       packages:
-        # example: removing firefox (in favor of the flatpak)
-        # "firefox" is the main package, "firefox-langpacks" is a dependency
+        # Browser
         - firefox
         - firefox-langpacks # also remove firefox dependency (not required for all packages, this is a special case)
+
+        # GNOME apps and onboarding
+        - gnome-software
+        - gnome-tour
+        - gnome-system-monitor
+        - gnome-classic-session
+        - gnome-initial-setup
 
   - type: default-flatpaks
     configurations:
       - notify: true # Send notification after install/uninstall is finished (true/false)
         scope: system
-        # If no repo information is specified, Flathub will be used by default
-        install: # system flatpaks we want all users to have and not remove
-          - org.mozilla.firefox
+        install:
+          - app.zen_browser.zen
           - org.gnome.Loupe
+          - org.gnome.Nautilus
       - scope: user # Also add Flathub user repo, but no user packages
+
+  - type: systemd
+    system:
+      enabled:
+        - keyd.service
 
   - type: signing # this sets up the proper policy & signing files for signed images to work fully
