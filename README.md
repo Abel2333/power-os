@@ -1,42 +1,80 @@
 # power-os &nbsp; [![bluebuild build badge](https://github.com/abel2333/power-os/actions/workflows/build.yml/badge.svg)](https://github.com/abel2333/power-os/actions/workflows/build.yml)
 
-See the [BlueBuild docs](https://blue-build.org/how-to/setup/) for quick setup instructions for setting up your own repository based on this template.
+`power-os` is a personal Fedora Atomic image built with BlueBuild. It is based on Fedora Kinoite 44, uses Niri as the primary desktop session, keeps KDE integration for portals and policykit, and bakes in a small set of custom-built developer tools.
 
-After setup, it is recommended you update this README to describe your custom image.
+## What is included
+
+- Fedora Kinoite 44 as the base image
+- Niri, Waybar, Mako, Kitty, swaylock, swayidle, and swaybg
+- KDE portal integration with `xdg-desktop-portal-kde`
+- `keyd` enabled by default
+- `starship`, `zsh`, `nushell`, `tmux`, `ripgrep`, `fd-find`, and `eza`
+- Custom-built `nvim`, `tree-sitter`, and `rmpc`
+- System Flatpaks:
+  - `app.zen_browser.zen`
+  - `org.kde.gwenview`
+  - `org.kde.dolphin`
+  - `com.qq.QQ`
+- Optional chezmoi integration for dotfiles bootstrap
 
 ## Installation
 
-> [!WARNING]  
-> [This is an experimental feature](https://www.fedoraproject.org/wiki/Changes/OstreeNativeContainerStable), try at your own discretion.
+> [!WARNING]
+> [Ostree native containers are still considered experimental by Fedora](https://www.fedoraproject.org/wiki/Changes/OstreeNativeContainerStable).
 
-To rebase an existing atomic Fedora installation to the latest build:
+To rebase an existing atomic Fedora installation to the latest published image:
 
-- First rebase to the unsigned image, to get the proper signing keys and policies installed:
-  ```
+- Rebase to the unsigned image first so the signing policy and keys are installed:
+  ```bash
   rpm-ostree rebase ostree-unverified-registry:ghcr.io/abel2333/power-os:latest
   ```
-- Reboot to complete the rebase:
-  ```
+- Reboot:
+  ```bash
   systemctl reboot
   ```
-- Then rebase to the signed image, like so:
-  ```
+- Rebase to the signed image:
+  ```bash
   rpm-ostree rebase ostree-image-signed:docker://ghcr.io/abel2333/power-os:latest
   ```
-- Reboot again to complete the installation
-  ```
+- Reboot again:
+  ```bash
   systemctl reboot
   ```
 
-The `latest` tag will automatically point to the latest build. That build will still always use the Fedora version specified in `recipe.yml`, so you won't get accidentally updated to the next major version.
+The `latest` image tag points to the newest build of this repo. The recipe itself is currently pinned to Fedora 44 in `recipes/recipe.yaml`.
+
+## Local Build
+
+To generate the Containerfile locally:
+
+```bash
+bluebuild generate recipes/recipe.yaml -o Containerfile
+```
+
+To build the image locally:
+
+```bash
+bluebuild build -vv recipes/recipe.yaml
+```
+
+## Chezmoi
+
+The image installs BlueBuild's `chezmoi` module, configured to use [`Abel2333/dotfiles`](https://github.com/Abel2333/dotfiles). With the current configuration, the user services are installed but not enabled globally for all users.
+
+To enable it for your own user:
+
+```bash
+systemctl enable --user chezmoi-init.service chezmoi-update.timer
+systemctl start --user chezmoi-init.service
+```
 
 ## ISO
 
-If build on Fedora Atomic, you can generate an offline ISO with the instructions available [here](https://blue-build.org/how-to/generate-iso/#_top). These ISOs cannot unfortunately be distributed on GitHub for free due to large sizes, so for public projects something else has to be used for hosting.
+If you build on Fedora Atomic, you can generate an offline ISO with the instructions in the [BlueBuild docs](https://blue-build.org/how-to/generate-iso/#_top).
 
 ## Verification
 
-These images are signed with [Sigstore](https://www.sigstore.dev/)'s [cosign](https://github.com/sigstore/cosign). You can verify the signature by downloading the `cosign.pub` file from this repo and running the following command:
+These images are signed with [Sigstore](https://www.sigstore.dev/)'s [cosign](https://github.com/sigstore/cosign). Verify the signature with:
 
 ```bash
 cosign verify --key cosign.pub ghcr.io/abel2333/power-os

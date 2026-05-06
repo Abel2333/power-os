@@ -1,0 +1,27 @@
+---
+
+modules:
+  - type: copy
+    from: rmpc-build
+    src: /out/rmpc
+    dest: /usr/bin/
+
+  # - type: copy
+  #   from: flow-build
+  #   src: /out/flow
+  #   dest: /usr/bin/
+
+  - type: copy
+    from: tree-sitter-build
+    src: /out/tree-sitter
+    dest: /
+
+  - type: copy
+    from: nvim-build
+    src: /out/nvim
+    dest: /usr/bin/
+
+  - type: copy
+    from: nvim-build
+    src: /out/nvim-runtime
+    dest: /

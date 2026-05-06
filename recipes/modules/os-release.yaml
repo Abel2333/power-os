@@ -1,0 +1,8 @@
+---
+
+type: os-release
+properties:
+  NAME: "Power OS"
+  PRETTY_NAME: "Power OS (Fedora Atomic with BlueBuild)"
+  HOME_URL: "https://github.com/Abel2333/power-os"
+  DOCUMENTATION_URL: "https://blue-build.org"

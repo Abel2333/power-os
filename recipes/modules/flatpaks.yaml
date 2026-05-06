@@ -1,0 +1,12 @@
+---
+
+type: default-flatpaks
+configurations:
+  - notify: true # Send notification after install/uninstall is finished (true/false)
+    scope: system
+    install:
+      - app.zen_browser.zen
+      - org.kde.gwenview
+      - org.kde.dolphin
+      - com.qq.QQ
+  - scope: user # Also add Flathub user repo, but no user packages

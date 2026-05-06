@@ -1,0 +1,9 @@
+---
+
+type: chezmoi
+repository: "https://github.com/Abel2333/dotfiles"
+branch: "master"
+all-users: false
+file-conflict-policy: skip
+run-every: "1d"
+wait-after-boot: "5m"

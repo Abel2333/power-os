@@ -1,0 +1,5 @@
+---
+
+type: bling
+install:
+  - rpmfusion

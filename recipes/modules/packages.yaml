@@ -1,0 +1,57 @@
+---
+
+type: dnf
+repos:
+  copr:
+    - atim/starship
+    - yalter/niri
+    - alternateved/keyd
+    - atim/nushell
+install:
+  packages:
+    # Shell prompt
+    - starship
+
+    # Wayland compositor and desktop shell
+    - niri
+    - mako
+    - waybar
+
+    # Terminal emulator
+    - kitty
+
+    # Session, lock, and wallpaper
+    - swaylock
+    - swayidle
+    - swaybg
+    - swaymsg
+
+    # X11 compatibility
+    - xwayland-satellite
+
+    # XDG desktop portals
+    - xdg-desktop-portal-kde
+    - xdg-desktop-portal-gtk
+
+    # Clipboard and audio control
+    - wl-clipboard
+    - pavucontrol
+
+    # Shell
+    - zsh
+    - nushell
+
+    # Privilege escalation and input remapping
+    - polkit-kde
+    - keyd
+
+    # CLI tools
+    - eza
+    - fd-find
+    - ripgrep
+    - tmux
+remove:
+  packages:
+    # Browser
+    - firefox
+    - firefox-langpacks # also remove firefox dependency (not required for all packages, this is a special case)

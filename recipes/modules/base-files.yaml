@@ -1,0 +1,6 @@
+---
+
+type: files
+files:
+  - source: system
+    destination: / # copies only files/system* into / .

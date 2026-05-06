@@ -1,0 +1,103 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+# image will be published to ghcr.io/<user>/<name>
+name: power-os
+# description will be included in the image's metadata
+description: Personal Fedora Atomic image with Niri as the primary desktop on a Fedora Kinoite base.
+
+# the base image to build on top of (FROM) and the version tag to use
+base-image: quay.io/fedora/fedora-kinoite
+image-version: 44 # latest is also supported if you want new updates ASAP
+
+# module configuration, executed in order
+# you can include multiple instances of the same module
+stages:
+  - name: rmpc-build
+    from: registry.fedoraproject.org/fedora:44
+    modules:
+      - type: rust-build
+        source: local
+        repository: "https://github.com/mierak/rmpc.git"
+        branch: "master"
+        cargo_bin: "rmpc"
+        output_bin: "/out/rmpc"
+
+  # - name: flow-build
+  #   from: registry.fedoraproject.org/fedora:44
+  #   modules:
+  #     - type: zig-build
+  #       source: local
+  #       repository: "https://github.com/neurocyte/flow.git"
+  #       branch: "master"
+  #       zig_bin: "flow"
+  #       output_bin: "/out/flow"
+  #       build_cmd:
+  #         - zig
+  #         - build
+  #         - -Doptimize=ReleaseSafe
+
+  - name: tree-sitter-build
+    from: registry.fedoraproject.org/fedora:44
+    modules:
+      - type: zig-build
+        source: local
+        repository: "https://github.com/tree-sitter/tree-sitter.git"
+        branch: "release-0.26"
+        zig_bin: "tree-sitter"
+        build_cmd:
+          - zig
+          - build
+          - -Doptimize=ReleaseFast
+          - -Dbuild-shared=true
+        artifacts:
+          - source: zig-out/lib/libtree-sitter.so
+            dest: /out/tree-sitter/usr/lib64/libtree-sitter.so
+            mode: "755"
+          - source: zig-out/include
+            dest: /out/tree-sitter/usr/include
+
+      - type: rust-build
+        source: local
+        repository: "https://github.com/tree-sitter/tree-sitter.git"
+        branch: "release-0.26"
+        cargo_bin: "tree-sitter"
+        output_bin: "/out/tree-sitter/usr/bin/tree-sitter"
+
+  - name: nvim-build
+    from: registry.fedoraproject.org/fedora:44
+    modules:
+      - type: zig-build
+        source: local
+        repository: "https://github.com/neovim/neovim.git"
+        branch: "master"
+        # zig_version: "0.16.0"
+        enable_updates_testing: true
+        zig_bin: "nvim"
+        build_cmd:
+          - zig
+          - build
+          - install
+          - -Doptimize=ReleaseFast
+          - --prefix
+          - /tmp/nvim-install
+        artifacts:
+          - source: /tmp/nvim-install/bin/nvim
+            dest: /out/nvim
+            mode: "755"
+          - source: /tmp/nvim-install/share/nvim/runtime
+            dest: /out/nvim-runtime/usr/share/nvim/runtime
+
+modules:
+
+  - from-file: modules/build-copy.yaml
+  - from-file: modules/bling.yaml
+  - from-file: modules/packages.yaml
+  - from-file: modules/base-files.yaml
+  - from-file: modules/systemd.yaml
+  - from-file: modules/polkit-agent.yaml
+  # - from-file: modules/kde-cleanup.yaml
+  - from-file: modules/fonts.yaml
+  - from-file: modules/flatpaks.yaml
+  - from-file: modules/chezmoi.yaml
+  - from-file: modules/os-release.yaml
+  - from-file: modules/signing.yaml
