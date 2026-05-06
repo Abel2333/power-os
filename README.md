@@ -61,11 +61,26 @@ bluebuild build -vv recipes/recipe.yaml
 
 The image installs BlueBuild's `chezmoi` module, configured to use [`Abel2333/dotfiles`](https://github.com/Abel2333/dotfiles). With the current configuration, the user services are installed but not enabled globally for all users.
 
-To enable it for your own user:
+After rebasing to this image, enable `chezmoi` for your own user with:
 
 ```bash
 systemctl enable --user chezmoi-init.service chezmoi-update.timer
 systemctl start --user chezmoi-init.service
+```
+
+To check the user units:
+
+```bash
+systemctl status --user chezmoi-init.service
+systemctl status --user chezmoi-update.timer
+```
+
+The module initializes the source repo with an HTTPS remote. If you want to edit your dotfiles and push changes back over SSH, switch the remote after initialization:
+
+```bash
+chezmoi cd
+git remote set-url origin git@github.com:<user>/<dotfiles-repo>.git
+git remote -v
 ```
 
 ## ISO

@@ -4,4 +4,4 @@ type: systemd
 system:
   enabled:
     - keyd.service
-    - dae.service
+    # - dae.service
