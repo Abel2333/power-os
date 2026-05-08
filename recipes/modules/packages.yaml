@@ -8,7 +8,7 @@ modules:
         - yalter/niri
         - alternateved/keyd
         - atim/nushell
-        - zhullyb/v2raya
+        - zhullyb/v2rayA
     install:
       packages:
         # Shell prompt
