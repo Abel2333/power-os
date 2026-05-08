@@ -43,6 +43,7 @@ stages:
         source: local
         repository: "https://github.com/tree-sitter/tree-sitter.git"
         branch: "release-0.26"
+        # enable_updates_testing: true
         zig_bin: "tree-sitter"
         build_cmd:
           - zig
@@ -70,7 +71,6 @@ stages:
         source: local
         repository: "https://github.com/neovim/neovim.git"
         branch: "master"
-        # zig_version: "0.16.0"
         enable_updates_testing: true
         zig_bin: "nvim"
         build_cmd:

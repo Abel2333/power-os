@@ -1,57 +1,72 @@
 ---
 
-type: dnf
-repos:
-  copr:
-    - atim/starship
-    - yalter/niri
-    - alternateved/keyd
-    - atim/nushell
-install:
-  packages:
-    # Shell prompt
-    - starship
+modules:
+  - type: dnf
+    repos:
+      copr:
+        - atim/starship
+        - yalter/niri
+        - alternateved/keyd
+        - atim/nushell
+    install:
+      packages:
+        # Shell prompt
+        - starship
 
-    # Wayland compositor and desktop shell
-    - niri
-    - mako
-    - waybar
+        # Wayland compositor and desktop shell
+        - niri
+        - mako
+        - waybar
 
-    # Terminal emulator
-    - kitty
+        # Terminal emulator
+        - kitty
 
-    # Session, lock, and wallpaper
-    - swaylock
-    - swayidle
-    - swaybg
-    - swaymsg
+        # Session, lock, and wallpaper
+        - swaylock
+        - swayidle
+        - swaybg
+        - swaymsg
 
-    # X11 compatibility
-    - xwayland-satellite
+        # X11 compatibility
+        - xwayland-satellite
 
-    # XDG desktop portals
-    - xdg-desktop-portal-kde
-    - xdg-desktop-portal-gtk
+        # XDG desktop portals
+        - xdg-desktop-portal-kde
+        - xdg-desktop-portal-gtk
 
-    # Clipboard and audio control
-    - wl-clipboard
-    - pavucontrol
+        # Clipboard and audio control
+        - wl-clipboard
+        - pavucontrol
 
-    # Shell
-    - zsh
-    - nushell
+        # Shell
+        - zsh
+        - nushell
 
-    # Privilege escalation and input remapping
-    - polkit-kde
-    - keyd
+        # Input method
+        - fcitx5
+        - fcitx5-rime
+        - fcitx5-gtk
+        - fcitx5-qt
+        - fcitx5-configtool
 
-    # CLI tools
-    - eza
-    - fd-find
-    - ripgrep
-    - tmux
-remove:
-  packages:
-    # Browser
-    - firefox
-    - firefox-langpacks # also remove firefox dependency (not required for all packages, this is a special case)
+        # Privilege escalation and input remapping
+        - polkit-kde
+        - keyd
+
+        # CLI tools
+        - eza
+        - fd-find
+        - ripgrep
+        - tmux
+    remove:
+      packages:
+        # Browser
+        - firefox
+        - firefox-langpacks # also remove firefox dependency (not required for all packages, this is a special case)
+        - alacritty
+
+  - type: script
+    snippets:
+      - "curl -fsSL https://github.com/carapace-sh/carapace-bin/releases/download/v1.6.5/carapace-bin_1.6.5_linux_amd64.tar.gz -o /tmp/carapace.tar.gz"
+      - "tar xzf /tmp/carapace.tar.gz -C /usr/local/bin carapace"
+      - "chmod +x /usr/local/bin/carapace"
