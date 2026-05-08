@@ -58,6 +58,9 @@ modules:
         - fd-find
         - ripgrep
         - tmux
+
+        # Proxy
+        - dae
     remove:
       packages:
         # Browser
