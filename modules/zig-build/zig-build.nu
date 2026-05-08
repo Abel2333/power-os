@@ -25,6 +25,56 @@ def collect_artifacts [output_bin, zig_bin, extra_artifacts] {
   [$default_artifact $extra_artifacts] | flatten
 }
 
+def apply_patches [clone_dir, patches] {
+  let patches_type = ($patches | describe)
+  if not ($patches_type | str starts-with "list<") {
+    fail "zig-build: 'patches' must be a list of patch file paths"
+  }
+
+  cd $clone_dir
+
+  for patch in $patches {
+    let patch_path = ($patch | into string)
+    if ($patch_path | is-empty) {
+      fail "zig-build: 'patches' entries cannot be empty"
+    }
+    if not ($patch_path | str starts-with "/") {
+      fail "zig-build: patch paths must be absolute, for example /tmp/files/patches/example.patch"
+    }
+
+    let patch_type = (
+      try {
+        $patch_path | path type
+      } catch {
+        ""
+      }
+    )
+    if $patch_type != "file" {
+      fail $"zig-build: patch file not found: ($patch_path)"
+    }
+
+    ^git apply --verbose $patch_path
+  }
+}
+
+def log_build_context [clone_dir, repository, branch, patches] {
+  cd $clone_dir
+
+  let commit = (^git rev-parse HEAD | str trim)
+  let zig_version = (^zig version | str trim)
+  let patch_count = ($patches | length)
+
+  print $"zig-build: repository=($repository)"
+  if ($branch | is-not-empty) {
+    print $"zig-build: branch=($branch)"
+  }
+  print $"zig-build: commit=($commit)"
+  print $"zig-build: zig=($zig_version)"
+  if $patch_count > 0 {
+    print $"zig-build: patches=($patch_count)"
+  }
+}
+
 def run_build [clone_dir, build_cmd] {
   let build_cmd_type = ($build_cmd | describe)
   # 在源码目录执行构建，保证相对路径和 build.zig 可见
@@ -113,6 +163,7 @@ def main [config] {
   let build_cmd = (cfg_get $cfg "build_cmd" [])
   let output_bin = (cfg_get $cfg "output_bin" "")
   let extra_artifacts = (cfg_get $cfg "artifacts" [])
+  let patches = (cfg_get $cfg "patches" [])
 
   let artifacts = (collect_artifacts $output_bin $zig_bin $extra_artifacts)
   if (($artifacts | length) == 0) {
@@ -140,6 +191,8 @@ def main [config] {
     ^git clone --depth 1 $repository $clone_dir
   }
 
+  apply_patches $clone_dir $patches
+  log_build_context $clone_dir $repository $branch $patches
   run_build $clone_dir $build_cmd
   install_artifacts $clone_dir $artifacts
 }

@@ -45,6 +45,8 @@ stages:
         branch: "release-0.26"
         # enable_updates_testing: true
         zig_bin: "tree-sitter"
+        patches:
+          - /tmp/files/patches/tree-sitter-zig-build.patch
         build_cmd:
           - zig
           - build

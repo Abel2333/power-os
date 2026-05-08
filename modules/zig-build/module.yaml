@@ -8,6 +8,10 @@ example: |
   enable_updates_testing: true
   zig_bin: bun
   output_bin: /out/bun
+  # Optional: apply local patch files after clone and before build.
+  # Patch files are typically provided from this repo's files/ tree and mounted at /tmp/files/...
+  # patches:
+  #   - /tmp/files/patches/example.patch
   # Optional: fully override the compile command.
   # Prefer list form for predictable argument handling:
   # build_cmd:

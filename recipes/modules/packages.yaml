@@ -68,5 +68,6 @@ modules:
   - type: script
     snippets:
       - "curl -fsSL https://github.com/carapace-sh/carapace-bin/releases/download/v1.6.5/carapace-bin_1.6.5_linux_amd64.tar.gz -o /tmp/carapace.tar.gz"
+      - "mkdir -p /usr/local/bin"
       - "tar xzf /tmp/carapace.tar.gz -C /usr/local/bin carapace"
       - "chmod +x /usr/local/bin/carapace"
