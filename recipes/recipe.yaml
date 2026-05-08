@@ -22,6 +22,29 @@ stages:
         cargo_bin: "rmpc"
         output_bin: "/out/rmpc"
 
+  - name: awww-build
+    from: registry.fedoraproject.org/fedora:44
+    modules:
+      - type: rust-build
+        source: local
+        repository: "https://codeberg.org/LGFae/awww.git"
+        branch: "main"
+        cargo_bin: "awww"
+        dnf_deps:
+          - pkgconf-pkg-config
+          - wayland-devel
+          - wayland-protocols-devel
+          - lz4-devel
+        build_cmd:
+          - cargo
+          - build
+          - --release
+        output_bin: "/out/awww"
+        artifacts:
+          - source: target/release/awww-daemon
+            dest: /out/awww-daemon
+            mode: "755"
+
   # - name: flow-build
   #   from: registry.fedoraproject.org/fedora:44
   #   modules:

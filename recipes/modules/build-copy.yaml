@@ -25,3 +25,13 @@ modules:
     from: nvim-build
     src: /out/nvim-runtime
     dest: /
+
+  - type: copy
+    from: awww-build
+    src: /out/awww
+    dest: /usr/bin/
+
+  - type: copy
+    from: awww-build
+    src: /out/awww-daemon
+    dest: /usr/bin/
