@@ -45,15 +45,6 @@ stages:
             dest: /out/awww-daemon
             mode: "755"
 
-  - name: carapace-build
-    from: registry.fedoraproject.org/fedora:44
-    modules:
-      - type: script
-        snippets:
-          - "curl -fsSL https://github.com/carapace-sh/carapace-bin/releases/download/v1.6.5/carapace-bin_1.6.5_linux_amd64.tar.gz -o /tmp/carapace.tar.gz"
-          - "tar xzf /tmp/carapace.tar.gz -C /tmp"
-          - "install -Dm755 /tmp/carapace /out/carapace"
-
   # - name: flow-build
   #   from: registry.fedoraproject.org/fedora:44
   #   modules:

@@ -27,11 +27,6 @@ modules:
     dest: /
 
   - type: copy
-    from: carapace-build
-    src: /out/carapace
-    dest: /usr/bin/
-
-  - type: copy
     from: awww-build
     src: /out/awww
     dest: /usr/bin/
