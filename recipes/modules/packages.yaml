@@ -8,6 +8,7 @@ modules:
         - yalter/niri
         - alternateved/keyd
         - atim/nushell
+        - zhullyb/v2raya
     install:
       packages:
         # Shell prompt
@@ -58,6 +59,7 @@ modules:
         - fd-find
         - ripgrep
         - tmux
+        - zoxide
 
         # Proxy
         - dae
