@@ -5,7 +5,7 @@ fonts:
   nerd-fonts:
     - FiraCode
     - NerdFontsSymbolsOnly
-    - SauceCodePro
+    - SourceCodePro
 
   url-fonts:
     - name: MapleMono
