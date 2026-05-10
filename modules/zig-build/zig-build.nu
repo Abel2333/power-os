@@ -8,7 +8,6 @@ def fail [msg] {
   error make { msg: $msg }
 }
 
-# 统一生成产物清单：默认 zig-out/bin/<zig_bin> + 附加 artifacts
 def collect_artifacts [output_bin, zig_bin, extra_artifacts] {
   let default_artifact = (
     if ($output_bin | is-empty) {
@@ -57,11 +56,11 @@ def apply_patches [clone_dir, patches] {
   }
 }
 
-def log_build_context [clone_dir, repository, branch, patches] {
+def log_build_context [clone_dir, repository, branch, patches, zig_version] {
   cd $clone_dir
 
   let commit = (^git rev-parse HEAD | str trim)
-  let zig_version = (^zig version | str trim)
+  let system_zig_version = (^zig version | str trim)
   let patch_count = ($patches | length)
 
   print $"zig-build: repository=($repository)"
@@ -69,38 +68,124 @@ def log_build_context [clone_dir, repository, branch, patches] {
     print $"zig-build: branch=($branch)"
   }
   print $"zig-build: commit=($commit)"
-  print $"zig-build: zig=($zig_version)"
+  print $"zig-build: system-zig=($system_zig_version)"
+  if ($zig_version | is-not-empty) {
+    print $"zig-build: requested-zig=($zig_version) via anyzig"
+  }
   if $patch_count > 0 {
     print $"zig-build: patches=($patch_count)"
   }
 }
 
-def run_build [clone_dir, build_cmd] {
+def setup_anyzig [zig_version] {
+  if ($zig_version | is-empty) {
+    return null
+  }
+
+  let anyzig_dir = "/tmp/anyzig"
+  let anyzig_bin = "/tmp/anyzig/zig-out/bin"
+
+  ^rm -rf $anyzig_dir
+  ^git clone --depth 1 https://github.com/marler8997/anyzig.git $anyzig_dir
+
+  do {
+    cd $anyzig_dir
+    ^zig build -Doptimize=ReleaseFast
+  }
+
+  {
+    bin_dir: $anyzig_bin
+    requested_version: $zig_version
+  }
+}
+
+def inject_zig_version [build_cmd, zig_version] {
+  if ($zig_version | is-empty) {
+    return $build_cmd
+  }
+
   let build_cmd_type = ($build_cmd | describe)
-  # 在源码目录执行构建，保证相对路径和 build.zig 可见
+  if not ($build_cmd_type | str starts-with "list<") {
+    return $build_cmd
+  }
+
+  if (($build_cmd | length) == 0) {
+    return [zig $zig_version build -Doptimize=ReleaseFast]
+  }
+
+  let cmd = (($build_cmd | first) | into string)
+  if $cmd == "zig" {
+    return ([zig $zig_version] | append ($build_cmd | skip 1))
+  }
+
+  $build_cmd
+}
+
+def current_path_string [] {
+  let default_system_path = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  let env_columns = ($env | columns)
+  let raw_path = (
+    if ($env_columns | any {|c| $c == "PATH" }) {
+      $env | get PATH
+    } else if ($env_columns | any {|c| $c == "Path" }) {
+      $env | get Path
+    } else {
+      $default_system_path
+    }
+  )
+
+  if (($raw_path | describe | str starts-with "list<")) {
+    $raw_path | str join ":"
+  } else {
+    $raw_path | into string
+  }
+}
+
+def run_build [clone_dir, build_cmd, zig_version, anyzig_ctx] {
+  let effective_cmd = (inject_zig_version $build_cmd $zig_version)
+
   cd $clone_dir
 
-  if (($build_cmd_type | str starts-with "list<")) {
-    if (($build_cmd | length) == 0) {
-      # 默认优化级别使用 ReleaseFast
-      ^zig build -Doptimize=ReleaseFast
-    } else {
-      let cmd = (($build_cmd | first) | into string)
-      if ($cmd | is-empty) {
-        fail "zig-build: 'build_cmd' list cannot start with an empty command"
+  let run = {|cmd_to_run|
+    let cmd_type = ($cmd_to_run | describe)
+    if (($cmd_type | str starts-with "list<")) {
+      if (($cmd_to_run | length) == 0) {
+        if ($zig_version | is-empty) {
+          ^zig build -Doptimize=ReleaseFast
+        } else {
+          ^zig $zig_version build -Doptimize=ReleaseFast
+        }
+      } else {
+        let cmd = (($cmd_to_run | first) | into string)
+        if ($cmd | is-empty) {
+          fail "zig-build: 'build_cmd' list cannot start with an empty command"
+        }
+        let args = ($cmd_to_run | skip 1 | each {|arg| $arg | into string })
+        run-external $cmd ...$args
       }
-      let args = ($build_cmd | skip 1 | each {|arg| $arg | into string })
-      run-external $cmd ...$args
-    }
-  } else if ($build_cmd_type == "string") {
-    if ($build_cmd | is-empty) {
-      ^zig build -Doptimize=ReleaseFast
+    } else if ($cmd_type == "string") {
+      if ($cmd_to_run | is-empty) {
+        if ($zig_version | is-empty) {
+          ^zig build -Doptimize=ReleaseFast
+        } else {
+          ^zig $zig_version build -Doptimize=ReleaseFast
+        }
+      } else {
+        ^bash -lc $cmd_to_run
+      }
     } else {
-      # string 形式兼容旧配置，交给 bash 解释
-      ^bash -lc $build_cmd
+      fail "zig-build: 'build_cmd' must be a string or list"
     }
+  }
+
+  if ($anyzig_ctx | is-empty) {
+    do $run $effective_cmd
   } else {
-    fail "zig-build: 'build_cmd' must be a string or list"
+    let anyzig_bin_dir = ($anyzig_ctx | get bin_dir)
+    let path_with_anyzig = $"($anyzig_bin_dir):(current_path_string)"
+    with-env { PATH: $path_with_anyzig } {
+      do $run $effective_cmd
+    }
   }
 }
 
@@ -117,7 +202,6 @@ def install_artifacts [clone_dir, artifacts] {
       fail "zig-build: each artifact requires 'dest'"
     }
 
-    # 相对路径按 clone_dir 解析，绝对路径原样使用
     let source_path = (
       if ($source | str starts-with "/") {
         $source
@@ -135,11 +219,12 @@ def install_artifacts [clone_dir, artifacts] {
     )
 
     if ($source_type == "dir") {
-      # Directory artifact: treat 'dest' as target directory and copy all contents.
       ^mkdir -p $dest
       ^cp -a $"($source_path)/." $"($dest)/"
-    } else {
+    } else if ($source_type == "file") {
       ^install $"-Dm($mode)" $source_path $dest
+    } else {
+      fail $"zig-build: artifact source not found: ($source_path)"
     }
   }
 }
@@ -164,6 +249,7 @@ def main [config] {
   let output_bin = (cfg_get $cfg "output_bin" "")
   let extra_artifacts = (cfg_get $cfg "artifacts" [])
   let patches = (cfg_get $cfg "patches" [])
+  let zig_version = (cfg_get $cfg "zig_version" "")
 
   let artifacts = (collect_artifacts $output_bin $zig_bin $extra_artifacts)
   if (($artifacts | length) == 0) {
@@ -177,7 +263,6 @@ def main [config] {
   )
   let dnf_deps = ([$dnf_deps [zig]] | flatten | uniq)
 
-  # 安装 Zig 构建所需依赖后再执行 clone/build/install
   if $enable_updates_testing {
     ^dnf install -y --enablerepo=updates-testing ...($dnf_deps)
   } else {
@@ -191,8 +276,9 @@ def main [config] {
     ^git clone --depth 1 $repository $clone_dir
   }
 
+  let anyzig_ctx = (setup_anyzig $zig_version)
   apply_patches $clone_dir $patches
-  log_build_context $clone_dir $repository $branch $patches
-  run_build $clone_dir $build_cmd
+  log_build_context $clone_dir $repository $branch $patches $zig_version
+  run_build $clone_dir $build_cmd $zig_version $anyzig_ctx
   install_artifacts $clone_dir $artifacts
 }

@@ -7,6 +7,8 @@ example: |
   branch: main
   enable_updates_testing: true
   zig_bin: bun
+  # Optional: pin the Zig compiler version via anyzig.
+  zig_version: 0.15.2
   output_bin: /out/bun
   # Optional: apply local patch files after clone and before build.
   # Patch files are typically provided from this repo's files/ tree and mounted at /tmp/files/...

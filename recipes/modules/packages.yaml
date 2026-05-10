@@ -9,12 +9,14 @@ modules:
         - alternateved/keyd
         - atim/nushell
         - zhullyb/v2rayA
+        - dejan/lazygit
     install:
       packages:
-        # Develop
+        # Development
         - gcc
         - gcc-c++
         - make
+        - perl
         - uv
 
         # Shell prompt
@@ -33,6 +35,8 @@ modules:
         - swayidle
         - swaybg
         - swaymsg
+        - brightnessctl
+        - upower
 
         # X11 compatibility
         - xwayland-satellite
@@ -60,14 +64,19 @@ modules:
         - polkit-kde
         - keyd
 
+        # AppImage compatibility
+        - fuse
+        - fuse-libs
+
         # CLI tools
         - eza
         - fd-find
+        - lazygit
+        - rclone
         - ripgrep
         - tmux
         - zoxide
-
-        - rclone
+        - fastfetch
 
         # Proxy
         - dae
@@ -77,17 +86,3 @@ modules:
         - firefox
         - firefox-langpacks # also remove firefox dependency (not required for all packages, this is a special case)
         - alacritty
-
-  - type: script
-    snippets:
-      # carapace-bin
-      - "curl -fsSL https://github.com/carapace-sh/carapace-bin/releases/download/v1.6.5/carapace-bin_1.6.5_linux_amd64.tar.gz -o /tmp/carapace.tar.gz"
-      - "tar xzf /tmp/carapace.tar.gz -C /usr/bin carapace"
-      - "chmod +x /usr/bin/carapace"
-
-      # codex
-      - "curl -fsSL https://github.com/openai/codex/releases/download/rust-v0.129.0/codex-x86_64-unknown-linux-musl.tar.gz -o /tmp/codex.tar.gz"
-      - "tar xzf /tmp/codex.tar.gz -C /tmp"
-      - "install -Dm755 /tmp/codex-x86_64-unknown-linux-musl /usr/bin/codex"
-      - "rm /tmp/codex.tar.gz /tmp/codex-x86_64-unknown-linux-musl"
-
