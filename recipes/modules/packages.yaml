@@ -86,6 +86,8 @@ modules:
         - tmux
         - zoxide
         - fastfetch
+        - mpc
+        - mpd
 
         # Proxy
         - dae

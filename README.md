@@ -17,6 +17,10 @@
   - `com.qq.QQ`
 - Optional chezmoi integration for dotfiles bootstrap
 
+## TODO
+
+- Add a proper power profile switching flow for ThinkBook-style `low-power` / `balanced` / `performance` modes under `niri`, ideally with both a CLI entrypoint and Waybar integration.
+
 ## Installation
 
 > [!WARNING]
