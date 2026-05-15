@@ -9,7 +9,18 @@ modules:
       - "chmod +x /usr/bin/carapace"
 
       # codex
-      - "curl -fsSL https://github.com/openai/codex/releases/download/rust-v0.129.0/codex-x86_64-unknown-linux-musl.tar.gz -o /tmp/codex.tar.gz"
+      - "curl -fsSL https://github.com/openai/codex/releases/download/rust-v0.130.0/codex-x86_64-unknown-linux-musl.tar.gz -o /tmp/codex.tar.gz"
       - "tar xzf /tmp/codex.tar.gz -C /tmp"
       - "install -Dm755 /tmp/codex-x86_64-unknown-linux-musl /usr/bin/codex"
       - "rm /tmp/codex.tar.gz /tmp/codex-x86_64-unknown-linux-musl"
+
+      # pi
+      # Keep the upstream release directory intact under /usr: the binary release
+      # includes runtime-adjacent assets such as wasm, themes, and export templates.
+      # Do not install this under /opt on Fedora Atomic, because /opt maps to /var/opt.
+      - "curl -fsSL https://github.com/earendil-works/pi/releases/download/v0.74.0/pi-linux-x64.tar.gz -o /tmp/pi.tar.gz"
+      - "rm -rf /usr/lib/pi"
+      - "mkdir -p /usr/lib"
+      - "tar xzf /tmp/pi.tar.gz -C /usr/lib"
+      - "ln -sf /usr/lib/pi/pi /usr/bin/pi"
+      - "rm /tmp/pi.tar.gz"
