@@ -1,0 +1,13 @@
+[Unit]
+Description=Build and link system-level Nix graphics runtime
+After=network-online.target nix.mount nix-daemon.socket
+Wants=network-online.target nix-daemon.socket
+Requires=nix.mount
+ConditionPathExists=/etc/nix/flake.nix
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/fedora-nix-graphics-rebuild
+
+[Install]
+WantedBy=multi-user.target

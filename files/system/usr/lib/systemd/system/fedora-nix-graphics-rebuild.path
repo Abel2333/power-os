@@ -1,0 +1,14 @@
+[Unit]
+Description=Trigger system-level Nix graphics runtime rebuild when Nix config changes
+After=nix.mount nix-daemon.socket
+Requires=nix.mount
+ConditionPathExists=/etc/nix/flake.nix
+
+[Path]
+PathChanged=/etc/nix/flake.nix
+PathChanged=/etc/nix/flake.lock
+PathChanged=/etc/nix/nix.conf
+Unit=fedora-nix-graphics-rebuild.service
+
+[Install]
+WantedBy=multi-user.target

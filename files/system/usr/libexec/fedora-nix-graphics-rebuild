@@ -1,0 +1,33 @@
+#!/usr/bin/env nu
+
+export def main [flake_ref: string = "/etc/nix"] {
+  let nix_system_dir = "/var/nix-system"
+  let out_link = $"($nix_system_dir)/graphics-drivers"
+  let runtime_link = "/run/opengl-driver"
+  let substituters = [
+    "https://mirror.sjtu.edu.cn/nix-channels/store"
+    "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
+    "https://mirrors.ustc.edu.cn/nix-channels/store"
+    "https://cache.nixos.org/"
+  ]
+
+  mkdir $nix_system_dir
+
+  print "Realizing system-level Nix graphics runtime"
+
+  # Keep a command-line mirror fallback here so first-boot bootstrap still prefers
+  # domestic caches even if /etc/nix/nix.conf has not taken effect yet.
+  # `nix build --out-link` is idempotent: if the flake output is unchanged, Nix
+  # reuses the existing store path and only refreshes the GC-root symlink.
+  ^nix build --option substituters ($substituters | str join " ") --out-link $out_link $"($flake_ref)#graphicsDrivers"
+  if $env.LAST_EXIT_CODE != 0 {
+    exit $env.LAST_EXIT_CODE
+  }
+
+  if ($out_link | path exists) {
+    ^ln -nsfT $out_link $runtime_link
+    if $env.LAST_EXIT_CODE != 0 {
+      exit $env.LAST_EXIT_CODE
+    }
+  }
+}

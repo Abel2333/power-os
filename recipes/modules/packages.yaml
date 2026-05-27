@@ -77,6 +77,13 @@ modules:
         - fuse
         - fuse-libs
 
+        # Nix package manager
+        - nix
+        - nix-daemon
+        - nix-filesystem
+        - nix-system
+        - nix-legacy
+
         # CLI tools
         - eza
         - fd-find
