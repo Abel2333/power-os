@@ -1,7 +1,7 @@
 [Unit]
 Description=Build and link system-level Nix graphics runtime
-After=network-online.target nix.mount nix-daemon.socket
-Wants=network-online.target nix-daemon.socket
+After=network-online.target nix.mount nix-daemon.service
+Wants=network-online.target nix-daemon.service
 Requires=nix.mount
 ConditionPathExists=/etc/nix/flake.nix
 

@@ -1,6 +1,6 @@
 [Unit]
 Description=Trigger system-level Nix graphics runtime rebuild when Nix config changes
-After=nix.mount nix-daemon.socket
+After=nix.mount nix-daemon.service
 Requires=nix.mount
 ConditionPathExists=/etc/nix/flake.nix
 
