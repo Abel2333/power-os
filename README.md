@@ -61,6 +61,12 @@ To build the image locally:
 bluebuild build -vv recipes/recipe.yaml
 ```
 
+## Nix
+
+This image also ships a small system-level Nix setup under `files/system/etc/nix/`. It enables flake support in `nix.conf`, prefers domestic binary caches for first-boot bootstrap, and provides a flake that builds a graphics runtime environment from `nixpkgs` for both `x86_64-linux` and `aarch64-linux`.
+
+These Nix-related files were adapted from the bootc + Nix setup described in <https://blog.qwerhyy.cyou/posts/bootc-nix/> and the related repository <https://github.com/Star122013/fedora-niri-atomic>.
+
 ## Chezmoi
 
 The image installs BlueBuild's `chezmoi` module, configured to use [`Abel2333/dotfiles`](https://github.com/Abel2333/dotfiles). With the current configuration, the user services are installed but not enabled globally for all users.
