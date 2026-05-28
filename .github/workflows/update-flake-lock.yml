@@ -1,0 +1,54 @@
+name: Update flake.lock
+
+on:
+  schedule:
+    # Every Monday at 08:30 Beijing time (00:30 UTC)
+    - cron: '30 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-flake-lock
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Update flake.lock and open PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Update flake.lock
+        working-directory: files/system/etc/nix
+        run: |
+          if [ ! -f flake.nix ]; then
+            echo "files/system/etc/nix/flake.nix not found; nothing to update."
+            exit 0
+          fi
+
+          nix flake update
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore: update nix flake.lock"
+          title: "chore: update nix flake.lock"
+          body: |
+            Automated update for `files/system/etc/nix/flake.lock`.
+          branch: chore/update-nix-flake-lock
+          delete-branch: true
+          add-paths: |
+            files/system/etc/nix/flake.lock

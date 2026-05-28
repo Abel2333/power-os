@@ -8,12 +8,10 @@ modules:
   - type: dnf
     repos:
       copr:
-        - atim/starship
         - yalter/niri
         - alternateved/keyd
         - atim/nushell
         - zhullyb/v2rayA
-        - dejan/lazygit
     install:
       packages:
         # Development
@@ -29,7 +27,6 @@ modules:
         - docker-compose-plugin
 
         # Shell prompt
-        - starship
 
         # Wayland compositor and desktop shell
         - niri
@@ -85,15 +82,6 @@ modules:
         - nix-legacy
 
         # CLI tools
-        - eza
-        - fd-find
-        - lazygit
-        - rclone
-        - ripgrep
-        - tmux
-        - zoxide
-        - fastfetch
-        - mpc
         - mpd
 
         # Proxy
