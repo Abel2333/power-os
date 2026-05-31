@@ -82,6 +82,7 @@ modules:
         - nix-legacy
 
         # CLI tools
+        - rclone
         - mpd
 
         # Proxy
