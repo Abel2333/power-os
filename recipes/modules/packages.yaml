@@ -18,6 +18,8 @@ modules:
         - gcc
         - gcc-c++
         - make
+        - cmake
+        - ninja
         - perl
         - uv
         - docker-ce
