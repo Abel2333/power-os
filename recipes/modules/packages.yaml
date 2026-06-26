@@ -19,6 +19,8 @@ modules:
         - gcc-c++
         - make
         - cmake
+        - clang
+        - clangd
         - ninja
         - perl
         - uv
