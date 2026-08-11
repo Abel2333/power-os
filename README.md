@@ -8,7 +8,7 @@
 - Niri, Waybar, Mako, Kitty, swaylock, swayidle, and swaybg
 - KDE portal integration with `xdg-desktop-portal-kde`
 - `keyd` enabled by default
-- `starship`, `zsh`, `nushell`, `tmux`, `ripgrep`, `fd-find`, and `eza`
+- `mise`, `starship`, `zsh`, `nushell`, `tmux`, `ripgrep`, `fd-find`, and `eza`
 - Custom-built `nvim`, `tree-sitter`, and `rmpc`
 - System Flatpaks:
   - `app.zen_browser.zen`

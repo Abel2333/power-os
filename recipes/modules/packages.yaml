@@ -11,6 +11,7 @@ modules:
         - yalter/niri
         - alternateved/keyd
         - atim/nushell
+        - jdxcode/mise
         - zhullyb/v2rayA
     install:
       packages:
@@ -24,6 +25,7 @@ modules:
         - ninja
         - perl
         - uv
+        - mise
         - docker-ce
         - docker-ce-cli
         - containerd.io
