@@ -4,8 +4,4 @@ type: systemd
 system:
   enabled:
     - keyd.service
-    - nix.mount
-    - nix-daemon.service
-    - fedora-nix-graphics-rebuild.service
-    - fedora-nix-graphics-rebuild.path
     # - dae.service
