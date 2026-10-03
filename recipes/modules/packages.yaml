@@ -4,6 +4,8 @@ modules:
   - type: script
     snippets:
       - "curl -fsSL https://download.docker.com/linux/fedora/docker-ce.repo -o /etc/yum.repos.d/docker-ce.repo"
+      # dae is not in Fedora repos; upstream Dae Universe repo is GPG-signed and tracks upstream releases
+      - "curl -fsSL https://daeuniverse.pages.dev/daeuniverse.repo -o /etc/yum.repos.d/daeuniverse.repo"
 
   - type: dnf
     repos:
@@ -12,7 +14,6 @@ modules:
         - alternateved/keyd
         - atim/nushell
         - jdxcode/mise
-        - zhullyb/v2rayA
     install:
       packages:
         # Development
