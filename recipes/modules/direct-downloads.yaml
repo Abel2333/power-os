@@ -22,3 +22,16 @@ modules:
       - "curl -fsSL https://github.com/prefix-dev/pixi/releases/download/v0.68.1/pixi-x86_64-unknown-linux-musl.tar.gz -o /tmp/pixi.tar.gz"
       - "tar xzf /tmp/pixi.tar.gz -C /usr/bin pixi"
       - chmod +x /usr/bin/pixi
+
+      # sing-box: outbound carrier for dae, see files/system/usr/lib/systemd/system/sing-box.service.
+      # Upstream publishes no checksum asset, so the digest is pinned here instead of
+      # being downloaded. Bump the version and the digest together, never one alone.
+      - "curl -fsSL https://github.com/SagerNet/sing-box/releases/download/v1.14.3/sing-box-1.14.3-linux-amd64-glibc.tar.gz -o /tmp/sing-box.tar.gz"
+      - "echo 'cadbaded70a635d0c37bf52614d8e3116542243247211e0b441328595c62acb6  /tmp/sing-box.tar.gz' | sha256sum -c -"
+      - "mkdir -p /tmp/sing-box && tar xzf /tmp/sing-box.tar.gz -C /tmp/sing-box --strip-components=1"
+      - "install -Dm755 /tmp/sing-box/sing-box /usr/bin/sing-box"
+      - "install -Dm644 /tmp/sing-box/LICENSE /usr/share/licenses/sing-box/LICENSE"
+      - "rm -rf /tmp/sing-box.tar.gz /tmp/sing-box"
+      # The group does not exist at build time, so ownership is set by the shipped
+      # tmpfiles.d entry at boot. Create the path here so the image carries it.
+      - "install -d -m 0750 /etc/sing-box"
