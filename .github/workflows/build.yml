@@ -29,6 +29,33 @@ jobs:
           # !! Add your recipes here
           - recipe.yaml
     steps:
+      # A share link or a subscription URL committed here would publish proxy
+      # credentials for the whole world to read. Fail before the build starts.
+      # Patterns stay generic on purpose: naming the provider would itself leak.
+      - name: Reject credential-shaped strings
+        run: |
+          set -uo pipefail
+          status=0
+
+          # Share links carry credentials in the userinfo part.
+          if grep -rInE '(vless|vmess|trojan|hysteria2?|tuic|ss|ssr)://[^[:space:]]*@' \
+               --exclude-dir=.git --exclude=Containerfile . ; then
+            echo "::error::share link with credentials found above"
+            status=1
+          fi
+
+          # A URL carrying a query string is how a subscription endpoint looks.
+          # Legitimate URLs in this repo (release assets, package repos, DoH) have
+          # no query part, so this does not produce false positives today.
+          if grep -rInE 'https?://[^[:space:]"'\'']*\?[^[:space:]"'\'']*=' \
+               --exclude-dir=.git --exclude=Containerfile . ; then
+            echo "::error::URL with a query string found above; subscriptions must not be committed"
+            status=1
+          fi
+
+          if [ "$status" -eq 0 ]; then echo "no credential-shaped strings found"; fi
+          exit "$status"
+
       # the build is fully handled by the reusable github action
       - name: Build Custom Image
         uses: blue-build/github-action@v1.12
