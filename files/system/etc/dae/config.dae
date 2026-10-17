@@ -1,97 +1,98 @@
+# dae owns transparent proxying and every routing decision.
+#
+# Split of responsibility:
+#   dae      - eBPF transparent proxy, CN/direct/block classification, whitelist
+#   sing-box - dumb outbound carrier, one selector, zero routing rules
+#
+# The subscription and its node credentials are deliberately absent: the
+# sing-box config is generated at runtime (see the sing-box systemd unit).
+
 global {
-  # tproxy port to listen on. It is NOT a HTTP/SOCKS port, and is just used by eBPF program.
-  # In normal case, you do not need to use it.
   tproxy_port: 12345
-
-  # 将其设置为 true 以保护 tproxy 端口免受未经请求的流量的影响。将其设置为 false 以允许用户使用自我管理iptables tproxy
   tproxy_port_protect: true
-
   log_level: warning
-
-  # 拉取订阅前禁用等待网络
-  disable_waiting_network: false
-
-  # 绑定的wan口
+  # Set explicitly to 0 to keep dae's internal socket mark and silence the
+  # "so_mark_from_dae is unset" warning.
+  so_mark_from_dae: 0
   wan_interface: auto
-  lan_interface: docker0
-
-  # domain domain+ domain++ ip 四种模式
   dial_mode: domain
-
   allow_insecure: false
-
   auto_config_kernel_parameter: true
+
+  # Resolver used for DNS server hostnames. It must be reachable without a
+  # working tunnel, otherwise "resolve node hostname -> needs proxy -> proxy not
+  # up yet" deadlocks. Note this key belongs to global, not to the dns block.
+  fallback_resolver: '223.5.5.5:53'
 }
 
-# 订阅
-subscription {
-  # 在下面填入你的订阅链接。
-}
-
+# Single outbound: the loopback mixed inbound of the local sing-box instance.
 node {
-  'socks5://127.0.0.1:2080'
+  sb: 'socks5://127.0.0.1:12334'
 }
 
 dns {
   upstream {
-    alidns: 'udp://dns.alidns.com:53'
-    googledns: 'tcp+udp://dns.google.com:53'
+    alidns: 'udp://223.5.5.5:53'
+    # Port 53 through the tunnel is blocked upstream (UDP times out, TCP is
+    # reset), so remote resolution goes over DoH on 443 instead.
+    googledns: 'https://dns.google/dns-query'
   }
   routing {
     request {
-      fallback: alidns
+      qname(geosite:cn) -> alidns
+      fallback: googledns
     }
     response {
       upstream(googledns) -> accept
-      !qname(geosite:cn) && ip(geoip:private) -> googledns
       fallback: accept
     }
   }
 }
+
 group {
   proxy_0 {
+    # Anchor on the tag rather than on a node pool index, so adding nodes later
+    # cannot silently repoint the group.
+    filter: name(sb)
     policy: fixed(0)
   }
 }
-# 参考 https://github.com/daeuniverse/dae/blob/main/docs/routing.md
+
 routing {
-  #pname(dnsmasq, systemd-resolved) && l4proto(udp) && dport(53) -> must_direct
+  # Pin the network manager to direct so its connectivity checks are not proxied.
   pname(NetworkManager) -> direct
+
+  # Local proxy processes dial their own upstreams; intercepting that traffic
+  # would loop back into dae. Must stay ahead of everything else.
+  pname(sing-box) -> must_direct
   pname(mihomo) -> must_direct
   pname(flclash) -> must_direct
   pname(clash) -> must_direct
   pname(clash-meta) -> must_direct
-
-  pname(sing-box) -> must_direct
   pname(throne) -> must_direct
   pname(Throne) -> must_direct
 
-  # 需要指定代理的网站或进程
-  domain(suffix: github.com) -> proxy_0
+  # Broadcast and multicast are never proxied.
+  dip(224.0.0.0/3, 'ff00::/8') -> direct
+  dip(geoip:private) -> direct
 
-  # AI
-  # domain(suffix: chatgpt.com) -> proxy_AI
-  # domain(suffix: openai.com) -> proxy_AI
-  # domain(suffix: google.com) -> proxy_AI
-
-  # block
+  # Drop QUIC so browsers fall back to TCP, which the tunnel actually carries.
+  # Keep this ahead of domain rules, otherwise a proxied domain matches first.
   l4proto(udp) && dport(443) -> block
 
-  # 需要指定直连的网站或进程
+  # Explicit direct destinations.
   pname(qbittorrent) -> direct
   domain(suffix: firefox.com) -> direct
   domain(suffix: push.services.mozilla.com) -> direct
   domain(suffix: minecraft.net) -> direct
   domain(suffix: microsoftonline.com) -> direct
   domain(suffix: immersivetranslate.com) -> direct
-  domain(full: api.bilibili.com) -> direct
   domain(suffix: bilibili.com) -> direct
   domain(suffix: archlinux.org) -> direct
   domain(suffix: cm.steampowered.com) -> direct
   domain(suffix: steamserver.net) -> direct
 
-  dip(224.0.0.0/3, 'ff00::/8') -> direct
-  dip(geoip:private) -> direct
+  # Everything else domestic stays direct.
   dip(geoip:cn) -> direct
   domain(geosite:cn) -> direct
 

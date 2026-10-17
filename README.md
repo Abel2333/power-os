@@ -9,6 +9,7 @@
 - KDE portal integration with `xdg-desktop-portal-kde`
 - `keyd` enabled by default
 - `mise`, `starship`, `zsh`, `nushell`, `tmux`, `ripgrep`, `fd-find`, and `eza`
+- `dae` as the transparent proxy, with `sing-box` as its outbound carrier
 - Custom-built `nvim`, `tree-sitter`, and `rmpc`
 - System Flatpaks:
   - `app.zen_browser.zen`
@@ -85,6 +86,56 @@ The module initializes the source repo with an HTTPS remote. If you want to edit
 chezmoi cd
 git remote set-url origin git@github.com:<user>/<dotfiles-repo>.git
 git remote -v
+```
+
+## Proxy stack
+
+`dae` is the transparent proxy and the only component that makes routing
+decisions. `sing-box` runs as a bare outbound carrier: it holds one mixed
+inbound on `127.0.0.1:12334` and its config contains no routing rules.
+
+```
+applications
+  -> dae          eBPF transparent proxy, CN/direct/block classification
+  -> socks5://127.0.0.1:12334
+  -> sing-box     one selector over the configured nodes
+  -> upstream nodes
+```
+
+The dae config is tracked at `files/system/etc/dae/config.dae`. It contains no
+credentials and no subscription: it only points at the local sing-box inbound.
+
+### The sing-box config is not in the image
+
+The node list is subscription data and therefore carries credentials, so it is
+generated at runtime and never committed:
+
+| Path | Owner | Mode | Purpose |
+| --- | --- | --- | --- |
+| `/etc/sing-box/` | `root:sing-box` | `2750` | setgid directory, so any file written inside inherits the `sing-box` group |
+| `/etc/sing-box/config.json` | `root:sing-box` | `0640` | generated config, readable by the service only |
+
+`sing-box.service` carries `ConditionPathExists=/etc/sing-box/config.json`, so it
+stays inactive rather than restart-looping until that file exists.
+
+A generator feeding this service should:
+
+1. run as root with `UMask=0027`, so files land as `0640 root:sing-box` thanks to
+   the setgid directory;
+2. write atomically (create a temporary file in the same directory, then
+   `rename`), so the service can never read a half-written config;
+3. finish with `systemctl reload sing-box`. sing-box reloads its config on
+   `SIGHUP` without restarting the process.
+
+Never widen that file to `0644`: the default umask would do exactly that, and it
+exposes the node credentials to every local user.
+
+### Checking the stack
+
+```bash
+systemctl status dae.service sing-box.service
+journalctl -b -u dae -u sing-box
+sing-box check -c /etc/sing-box/config.json
 ```
 
 ## ISO

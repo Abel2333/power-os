@@ -1,0 +1,11 @@
+---
+# git only records the executable bit, so every file copied from files/system
+# lands as 0644 regardless of what the working tree shows. Some services refuse
+# to start under those modes, and that failure only appears on first boot.
+#
+# Keep this list in sync with anything that needs a restrictive mode.
+modules:
+  - type: script
+    snippets:
+      # dae rejects a config that is group- or world-accessible.
+      - "chmod 0600 /etc/dae/config.dae"

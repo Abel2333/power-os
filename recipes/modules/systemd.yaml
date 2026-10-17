@@ -4,4 +4,7 @@ type: systemd
 system:
   enabled:
     - keyd.service
-    # - dae.service
+    - dae.service
+    # Starts only once a runtime-generated config exists; see the unit's
+    # ConditionPathExists. Credentials are never baked into the image.
+    - sing-box.service
