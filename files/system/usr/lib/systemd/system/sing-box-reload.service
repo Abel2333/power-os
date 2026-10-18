@@ -1,0 +1,9 @@
+[Unit]
+Description=Reload sing-box after a config change
+
+[Service]
+Type=oneshot
+# reload-or-restart rather than reload: on the first run the unit has never
+# started, because it is gated on ConditionPathExists and the config only
+# appears once subsmith has written it.
+ExecStart=/bin/systemctl reload-or-restart sing-box.service

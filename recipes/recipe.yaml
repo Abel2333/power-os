@@ -16,6 +16,10 @@ modules:
   - from-file: modules/packages.yaml
   - from-file: modules/direct-downloads.yaml
   - from-file: modules/base-files.yaml
+  # Runs after base-files so the shipped config exists, and after
+  # prebuilt-assets so the binary does; before systemd so the generated timer
+  # can be enabled.
+  - from-file: modules/subsmith.yaml
   - from-file: modules/file-permissions.yaml
   - from-file: modules/systemd.yaml
   - from-file: modules/polkit-agent.yaml

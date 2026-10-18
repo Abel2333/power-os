@@ -1,0 +1,9 @@
+[Unit]
+Description=Reload sing-box when its generated config changes
+
+[Path]
+PathChanged=/etc/sing-box/config.json
+Unit=sing-box-reload.service
+
+[Install]
+WantedBy=multi-user.target

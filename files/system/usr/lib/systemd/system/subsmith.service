@@ -1,0 +1,32 @@
+[Unit]
+Description=Render the sing-box config from the subscription
+Documentation=https://github.com/Abel2333/subsmith
+Wants=network-online.target
+After=network-online.target
+# Nothing to do until the operator has provisioned the URL.
+ConditionPathExists=/etc/subsmith/url
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/subsmith --config /etc/subsmith/config.toml
+# The tool sets the destination mode itself, so the umask is not load-bearing;
+# it only keeps stray files tight.
+UMask=0027
+
+# The only write is the destination. Everything else the tool needs is read-only,
+# and it never talks to the service manager: a separate path unit reloads
+# sing-box when the file actually changes.
+ProtectSystem=strict
+ReadWritePaths=/etc/sing-box
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectProc=invisible
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=yes
+LockPersonality=yes
+SystemCallArchitectures=native

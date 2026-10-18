@@ -24,3 +24,8 @@ modules:
       - "sed 's#  .*/#  #' /tmp/prebuilt/nvim-x86_64-fedora44.tar.gz.sha256 > /tmp/prebuilt/nvim-x86_64-fedora44.tar.gz.sha256.check"
       - "cd /tmp/prebuilt && sha256sum -c nvim-x86_64-fedora44.tar.gz.sha256.check"
       - "tar xzf /tmp/prebuilt/nvim-x86_64-fedora44.tar.gz -C /"
+      - "curl -fsSL https://github.com/Abel2333/binary-foundry/releases/download/assets-v1.2.0/subsmith-x86_64-fedora44.tar.gz -o /tmp/prebuilt/subsmith-x86_64-fedora44.tar.gz"
+      - "curl -fsSL https://github.com/Abel2333/binary-foundry/releases/download/assets-v1.2.0/subsmith-x86_64-fedora44.tar.gz.sha256 -o /tmp/prebuilt/subsmith-x86_64-fedora44.tar.gz.sha256"
+      - "sed 's#  .*/#  #' /tmp/prebuilt/subsmith-x86_64-fedora44.tar.gz.sha256 > /tmp/prebuilt/subsmith-x86_64-fedora44.tar.gz.sha256.check"
+      - "cd /tmp/prebuilt && sha256sum -c subsmith-x86_64-fedora44.tar.gz.sha256.check"
+      - "tar xzf /tmp/prebuilt/subsmith-x86_64-fedora44.tar.gz -C /"

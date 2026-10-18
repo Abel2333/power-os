@@ -1,0 +1,11 @@
+---
+# Generate the timer from the same config the service reads, so the refresh
+# cadence has exactly one definition. `render-timer` validates every key on the
+# way, which turns a bad config into a failed image build instead of a failed
+# first boot. It reads no sources, performs no network access and writes only
+# stdout, so no credential can reach an image layer here.
+modules:
+  - type: script
+    snippets:
+      - "subsmith render-timer --config /etc/subsmith/config.toml > /usr/lib/systemd/system/subsmith.timer"
+      - "chmod 0644 /usr/lib/systemd/system/subsmith.timer"

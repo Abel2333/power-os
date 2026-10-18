@@ -8,3 +8,7 @@ system:
     # Starts only once a runtime-generated config exists; see the unit's
     # ConditionPathExists. Credentials are never baked into the image.
     - sing-box.service
+    # Regenerates that config on a timer; the path unit below reloads sing-box
+    # only when the file actually changes.
+    - subsmith.timer
+    - sing-box-reload.path

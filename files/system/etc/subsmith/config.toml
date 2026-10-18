@@ -1,0 +1,50 @@
+# Deployment policy for subsmith. The subscription URL is not here: it lives in
+# /etc/subsmith/url, which the operator provisions and the image never carries.
+#
+# `subsmith render-timer` reads [refresh] at image build time and writes the
+# timer unit, so this file is the only place the cadence is defined.
+
+[input]
+sources = ["/etc/subsmith/url"]
+min_nodes = 1
+
+[output]
+path = "/etc/sing-box/config.json"
+mode = "0640"
+
+[verify]
+enabled = true
+binary = "/usr/bin/sing-box"
+
+[listen]
+address = "127.0.0.1"
+port = 12334
+
+[selector]
+tag = "proxy"
+default = "auto"
+
+[urltest]
+tag = "auto"
+url = "https://www.gstatic.com/generate_204"
+interval = "3m"
+tolerance = 50
+
+[dns]
+direct = ["223.5.5.5"]
+remote = ["1.1.1.1"]
+final = "dns-remote"
+
+[log]
+level = "warn"
+
+[diagnostics]
+level = "info"
+timestamps = true
+color = "auto"
+
+[refresh]
+interval = "6h"
+boot_delay = "2min"
+randomized_delay = "5min"
+unit = "subsmith.service"

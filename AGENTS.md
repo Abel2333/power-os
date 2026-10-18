@@ -3,7 +3,7 @@
 ## Project Structure & Module Organization
 `power-os` is a BlueBuild-based Fedora Atomic image, not a conventional app. The main image definition lives in `recipes/recipe.yaml`, with reusable recipe fragments in `recipes/modules/*.yaml`. Custom build modules live in `modules/<name>/` and usually pair `module.yaml` metadata with a Nushell runner such as `rust-build.nu` or `zig-build.nu`. Static system files belong in `files/system/`, helper scripts in `files/scripts/`, and local patch files in `files/patches/`. CI is defined in `.github/workflows/build.yml`.
 
-`recipes/modules/prebuilt-assets.yaml` is a special integration point. It pulls release tarballs such as `rmpc`, `awww`, `tree-sitter`, `nvim`, and `aria2` from the separate `binary-foundry` repository, verifies SHA256 files, and extracts them into the image. Treat that repository as the prebuild pipeline: it starts from a Fedora 44 container base, builds selected tools from source, then publishes release artifacts consumed here.
+`recipes/modules/prebuilt-assets.yaml` is a special integration point. It pulls release tarballs such as `rmpc`, `awww`, `tree-sitter`, `nvim`, `aria2`, and `subsmith` from the separate `binary-foundry` repository, verifies SHA256 files, and extracts them into the image. Treat that repository as the prebuild pipeline: it starts from a Fedora 44 container base, builds selected tools from source, then publishes release artifacts consumed here.
 
 ## Build, Test, and Development Commands
 Use BlueBuild locally before opening a PR:

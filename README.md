@@ -114,27 +114,46 @@ generated at runtime and never committed:
 | --- | --- | --- | --- |
 | `/etc/sing-box/` | `root:sing-box` | `2750` | setgid directory, so any file written inside inherits the `sing-box` group |
 | `/etc/sing-box/config.json` | `root:sing-box` | `0640` | generated config, readable by the service only |
+| `/etc/subsmith/` | `root:root` | `0750` | operator input directory, created by tmpfiles |
+| `/etc/subsmith/url` | `root:root` | `0600` | the subscription URL, provisioned by hand, never in the image |
+| `/etc/subsmith/config.toml` | `root:root` | `0644` | deployment policy, shipped by the image |
 
 `sing-box.service` carries `ConditionPathExists=/etc/sing-box/config.json`, so it
 stays inactive rather than restart-looping until that file exists.
 
-A generator feeding this service should:
+The generator is [`subsmith`](https://github.com/Abel2333/subsmith), built by
+`binary-foundry` and extracted from a release tarball like the other prebuilt
+tools:
 
-1. run as root with `UMask=0027`, so files land as `0640 root:sing-box` thanks to
-   the setgid directory;
-2. write atomically (create a temporary file in the same directory, then
-   `rename`), so the service can never read a half-written config;
-3. finish with `systemctl reload sing-box`. sing-box reloads its config on
-   `SIGHUP` without restarting the process.
+1. `subsmith.timer` runs `subsmith.service` every six hours. The timer itself is
+   generated at image build time from `[refresh]` in
+   `/etc/subsmith/config.toml`, so the cadence has one definition, and a bad
+   config fails the build instead of the first boot.
+2. `subsmith.service` runs as root with `ProtectSystem=strict` and
+   `ReadWritePaths=/etc/sing-box`. The tool writes atomically with the mode from
+   the config, checks the candidate with `sing-box check`, and replaces the
+   file only when the checker accepts it. An unchanged subscription produces no
+   write at all.
+3. `sing-box-reload.path` watches `/etc/sing-box/config.json` and starts
+   `sing-box-reload.service`, which runs `systemctl reload-or-restart
+   sing-box.service`. Because the generator only writes on a real change, the
+   reload happens exactly then, and the first generation also starts the unit.
 
-Never widen that file to `0644`: the default umask would do exactly that, and it
-exposes the node credentials to every local user.
+Provision the URL once:
+
+```bash
+sudo install -Dm600 /dev/stdin /etc/subsmith/url <<< 'https://…'
+```
+
+Never put the URL in `config.toml`: that file is part of the public image.
+Never widen the generated file to `0644`: it exposes the node credentials to
+every local user.
 
 ### Checking the stack
 
 ```bash
-systemctl status dae.service sing-box.service
-journalctl -b -u dae -u sing-box
+systemctl status dae.service sing-box.service subsmith.timer sing-box-reload.path
+journalctl -b -u dae -u sing-box -u subsmith
 sing-box check -c /etc/sing-box/config.json
 ```
 
