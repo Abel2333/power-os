@@ -33,7 +33,14 @@ ProtectKernelTunables=yes
 ProtectKernelModules=yes
 ProtectControlGroups=yes
 ProtectProc=invisible
-RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+# sing-box opens a netlink socket while initializing its network manager, to
+# watch interface and route changes. Without AF_NETLINK it exits immediately
+# with "create netlink socket: address family not supported by protocol", and
+# because the unit is gated on a config file that only exists at runtime, a
+# broken sandbox here stays invisible until the first real start. Verified by
+# an A/B run under systemd-run: AF_INET/AF_INET6/AF_UNIX alone reproduces the
+# failure, adding AF_NETLINK fixes it.
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
 RestrictNamespaces=yes
 LockPersonality=yes
 SystemCallArchitectures=native
