@@ -58,6 +58,13 @@ modules:
         - xdg-desktop-portal-kde
         - xdg-desktop-portal-gtk
 
+        # Secret storage: gnome-keyring provides org.freedesktop.secrets for
+        # Flatpak apps, and pam_gnome_keyring lets plasmalogin unlock the login
+        # keyring at sign-in. plasmalogin already ships both hooks in
+        # /usr/lib/pam.d/plasmalogin, but they are no-ops without the module.
+        - gnome-keyring
+        - gnome-keyring-pam
+
         # Clipboard and audio control
         - wl-clipboard
         - pavucontrol

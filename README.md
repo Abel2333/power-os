@@ -7,6 +7,7 @@
 - Fedora Kinoite 44 as the base image
 - Niri, Waybar, Mako, Kitty, swaylock, swayidle, and swaybg
 - KDE portal integration with `xdg-desktop-portal-kde`
+- `gnome-keyring` plus the PAM module, so the login keyring is unlocked by `plasmalogin` at sign-in and backs Flatpak secret storage
 - `keyd` enabled by default
 - `mise`, `starship`, `zsh`, `nushell`, `tmux`, `ripgrep`, `fd-find`, and `eza`
 - `dae` as the transparent proxy, with `sing-box` as its outbound carrier
