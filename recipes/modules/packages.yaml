@@ -79,6 +79,14 @@ modules:
         - fcitx5-gtk
         - fcitx5-qt
         - fcitx5-configtool
+        # Optional librime plugins, loaded from /usr/lib64/rime-plugins/ at
+        # runtime. 万象拼音 drives its processors and filters from Lua, so
+        # librime-lua is mandatory for it; librime-octagram is what loads the
+        # .gram grammar model. librime-tools adds rime_deployer, which rebuilds
+        # a schema without restarting fcitx5.
+        - librime-lua
+        - librime-octagram
+        - librime-tools
 
         # Privilege escalation and input remapping
         - polkit-kde
