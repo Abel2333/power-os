@@ -1,6 +1,10 @@
 ---
 
+# niri.service is Before=xdg-desktop-autostart.target, so units wanted by that
+# target start after the compositor is up and has exported WAYLAND_DISPLAY. From
+# default.target the agent raced the compositor, found neither WAYLAND_DISPLAY
+# nor a usable DISPLAY, and aborted on the Qt xcb plugin.
 type: script
 snippets:
-  - install -d /etc/systemd/user/default.target.wants
-  - ln -sf /usr/lib/systemd/user/plasma-polkit-agent.service /etc/systemd/user/default.target.wants/plasma-polkit-agent.service
+  - install -d /etc/systemd/user/xdg-desktop-autostart.target.wants
+  - ln -sf /usr/lib/systemd/user/plasma-polkit-agent.service /etc/systemd/user/xdg-desktop-autostart.target.wants/plasma-polkit-agent.service
