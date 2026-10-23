@@ -25,7 +25,6 @@ modules:
         - clangd
         - ninja
         - perl
-        - uv
         - mise
         - docker-ce
         - docker-ce-cli
